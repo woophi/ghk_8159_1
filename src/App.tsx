@@ -22,7 +22,7 @@ type Destination = {
 };
 
 const formatMoney = (amount: number) => `${amount.toLocaleString('ru-RU')} ₽`;
-const clampAmount = (amount: number) => Math.max(0, Math.min(SOURCE_AMOUNT, Math.round(amount || 0)));
+const clampAmount = (amount: number, maxAmount = SOURCE_AMOUNT) => Math.max(0, Math.min(maxAmount, Math.round(amount || 0)));
 
 const VARIANT = {
   variant: 'a1',
@@ -52,6 +52,16 @@ export const App = () => {
   const editingDestination = destinations.find(destination => destination.id === editingId) ?? null;
   const total = useMemo(() => destinations.reduce((sum, destination) => sum + destination.amount, 0), [destinations]);
   const remainder = Math.max(0, SOURCE_AMOUNT - total);
+  const editingLimit = useMemo(() => {
+    if (!editingDestination) return SOURCE_AMOUNT;
+
+    const otherTotal = destinations.reduce(
+      (sum, destination) => (destination.id === editingDestination.id ? sum : sum + destination.amount),
+      0,
+    );
+
+    return Math.max(0, SOURCE_AMOUNT - otherTotal);
+  }, [destinations, editingDestination]);
 
   useEffect(() => {
     document.body.dataset.variant = VARIANT.variant;
@@ -128,7 +138,7 @@ export const App = () => {
   const confirmAmount = () => {
     if (!editingDestination) return;
 
-    const nextAmount = clampAmount(draftAmount);
+    const nextAmount = clampAmount(draftAmount, editingLimit);
     setDestinations(items =>
       items.map(destination => (destination.id === editingDestination.id ? { ...destination, amount: nextAmount } : destination)),
     );
@@ -137,7 +147,7 @@ export const App = () => {
   };
 
   const handleDraftChange = (_event: ChangeEvent<HTMLInputElement> | null, payload: { value: number | null }) => {
-    setDraftAmount(clampAmount(payload.value ?? 0));
+    setDraftAmount(clampAmount(payload.value ?? 0, editingLimit));
   };
 
   const handleTransfer = () => {
@@ -240,14 +250,14 @@ export const App = () => {
             bold={false}
             label="Сумма перевода"
             labelView="outer"
-            max={SOURCE_AMOUNT}
+            max={editingLimit}
             min={0}
             minority={1}
             onChange={handleDraftChange}
             value={draftAmount}
           />
           <Typography.Text view="primary-small" color="secondary">
-            Доступно для перевода: до {formatMoney(SOURCE_AMOUNT)}
+            Доступно для перевода: до {formatMoney(editingLimit)}
           </Typography.Text>
         </div>
       </BottomSheet>

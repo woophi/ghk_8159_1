@@ -17,7 +17,6 @@ const TRANSFER_CLICK_KEY = 'e013_transfer_click_sent_a1';
 type Destination = {
   id: string;
   title: string;
-  subtitle: string;
   amount: number;
   Icon: ComponentType<{ color?: string }>;
 };
@@ -33,7 +32,6 @@ const VARIANT = {
     {
       id: 'saving',
       title: 'Накопительный счёт',
-      subtitle: 'На цель: отпуск',
       amount: 1000,
       Icon: CategoryInvoiceMIcon,
     },
@@ -199,7 +197,6 @@ export const App = () => {
                   <div className={appSt.iconWrap}><Icon color="#030306" /></div>
                   <div className={appSt.accountMeta}>
                     <Typography.Text view="primary-small" weight="medium">{destination.title}</Typography.Text>
-                    <Typography.Text view="secondary-large" color="secondary">{destination.subtitle}</Typography.Text>
                   </div>
                   <button
                     className={`${appSt.amountButton} ${amountTone({ empty: destination.amount === 0 })}`}

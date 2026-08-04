@@ -23,6 +23,8 @@ type Destination = {
 
 const formatMoney = (amount: number) => `${amount.toLocaleString('ru-RU')} ₽`;
 const clampAmount = (amount: number, maxAmount = SOURCE_AMOUNT) => Math.max(0, Math.min(maxAmount, Math.round(amount || 0)));
+const getDestinationAmount = (destinations: Destination[], id: string) =>
+  destinations.find(destination => destination.id === id)?.amount ?? 0;
 
 const VARIANT = {
   variant: 'a1',
@@ -155,7 +157,12 @@ export const App = () => {
 
     transferSent.current = true;
     sessionStorage.setItem(TRANSFER_CLICK_KEY, '1');
-    trackEvent('e013_transfer_click', { var: VARIANT.variant, amount: total });
+    trackEvent('e013_transfer_click', {
+      var: VARIANT.variant,
+      amount: String(total),
+      dimension_1: String(getDestinationAmount(destinations, 'saving')),
+      dimension_2: String(getDestinationAmount(destinations, 'broker')),
+    });
     setThankYouShown(true);
     trackEvent('e013_thankyou_impression', { var: VARIANT.variant, amount: total });
   };
